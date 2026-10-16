@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="bg-background">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - IntelliTrip</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta name="application-name" content="IntelliTrip">
+    <meta property="og:site_name" content="IntelliTrip">
+    <link rel="canonical" href="https://intellitrip.eu.org/">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/output.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-background text-foreground font-sans antialiased" x-data="settingsPage()" x-init="init()">
+<div class="flex min-h-screen">
+    <div th:replace="~{fragments/sidebar-nav :: sidebar-nav(active='settings')}"></div>
+    <div class="flex min-h-screen flex-1 flex-col">
+        <div th:replace="~{fragments/topbar :: topbar(title='Settings', subtitle='Manage your account, preferences, and security')}"></div>
+        <div class="flex-1 px-4 py-8 md:px-8 max-w-4xl">
+
+            <!-- Toast -->
+            <div x-show="toast.show" x-cloak x-transition class="fixed bottom-6 right-6 z-50 rounded-2xl border border-border bg-card p-4 shadow-2xl flex items-center gap-3">
+                <span :class="toast.type === 'error' ? 'text-destructive' : 'text-primary'">
+                    <template x-if="toast.type !== 'error'">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </template>
+                    <template x-if="toast.type === 'error'">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </template>
+                </span>
+                <p class="text-sm font-medium" x-text="toast.message"></p>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- HOME: category cards (shown when activeSection === 'home')   -->
+            <!-- ============================================================ -->
+            <div x-show="activeSection === 'home'" class="space-y-4">
+                <p class="text-muted-foreground text-sm mb-6">Select a category below to manage your preferences.</p>
+
+                <div class="grid gap-4 sm:grid-cols-2 grid-cols-1">
+
+                    <!-- Account -->
+                    <button type="button" @click="activeSection = 'account'"
+                            class="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 text-left hover:border-primary/50 hover:bg-primary/5 transition-all">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl group-hover:bg-primary/20 transition-colors">👤</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-base">Account</p>
+                            <p class="text-sm text-muted-foreground mt-0.5">Edit profile, change email &amp; password</p>
+                        </div>
+                        <svg class="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
+                    <!-- Travel Preferences -->
+                    <button type="button" @click="activeSection = 'preferences'"
+                            class="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 text-left hover:border-primary/50 hover:bg-primary/5 transition-all">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl group-hover:bg-primary/20 transition-colors">✈️</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-base">Travel Preferences</p>
+                            <p class="text-sm text-muted-foreground mt-0.5">Budget, style, accommodation &amp; interests</p>
+                        </div>
+                        <svg class="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
+                    <!-- Appearance -->
+                    <button type="button" @click="activeSection = 'appearance'"
+                            class="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 text-left hover:border-primary/50 hover:bg-primary/5 transition-all">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl group-hover:bg-primary/20 transition-colors">🎨</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-base">Appearance</p>
+                            <p class="text-sm text-muted-foreground mt-0.5">Light mode, dark mode &amp; theme</p>
+                        </div>
+                        <svg class="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
+                    <!-- Notifications -->
+                    <button type="button" @click="activeSection = 'notifications'"
+                            class="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 text-left hover:border-primary/50 hover:bg-primary/5 transition-all">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl group-hover:bg-primary/20 transition-colors">🔔</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-base">Notifications</p>
+                            <p class="text-sm text-muted-foreground mt-0.5">Trip reminders &amp; travel recommendations</p>
+                        </div>
+                        <svg class="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
+                    <!-- Privacy & Security -->
+                    <button type="button" @click="activeSection = 'privacy'"
+                            class="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 text-left hover:border-primary/50 hover:bg-primary/5 transition-all">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl group-hover:bg-primary/20 transition-colors">🔒</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-base">Privacy &amp; Security</p>
+                            <p class="text-sm text-muted-foreground mt-0.5">Change password &amp; delete account</p>
+                        </div>
+                        <svg class="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
+                    <!-- Logout -->
+                    <a href="/logout"
+                       class="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 text-left hover:border-destructive/50 hover:bg-destructive/5 transition-all">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-2xl group-hover:bg-destructive/10 transition-colors">🚪</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-base group-hover:text-destructive transition-colors">Logout</p>
+                            <p class="text-sm text-muted-foreground mt-0.5">Sign out of your IntelliTrip account</p>
+                        </div>
+                        <svg class="h-5 w-5 text-muted-foreground group-hover:text-destructive transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- DETAIL VIEWS                                                  -->
+            <!-- ============================================================ -->
+
+            <!-- Back button (shown for all detail sections) -->
+            <div x-show="activeSection !== 'home'" x-cloak class="mb-6">
+                <button type="button" @click="activeSection = 'home'"
+                        class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    Back to Settings
+                </button>
+                <h2 class="mt-3 text-2xl font-bold"
+                    x-text="{ account: '👤 Account', preferences: '✈️ Travel Preferences', appearance: '🎨 Appearance', notifications: '🔔 Notifications', privacy: '🔒 Privacy & Security' }[activeSection]"></h2>
+            </div>
+
+            <!-- ===== ACCOUNT ===== -->
+            <div x-show="activeSection === 'account'" x-cloak class="space-y-5">
+
+                <!-- Edit Profile -->
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-5">
+                    <div>
+                        <h3 class="font-semibold text-base">Edit Profile</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Manage your public name and home country.</p>
+                    </div>
+                    <form @submit.prevent="saveProfile" class="space-y-4 max-w-lg">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Full Name</label>
+                            <input type="text" x-model="profileForm.name" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Country / Region</label>
+                            <select x-model="profileForm.countryCode" @change="onCountryChange()"
+                                    class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                <option value="" disabled>Select your country</option>
+                                <template x-for="c in countries" :key="c.alpha2">
+                                    <option :value="c.alpha2" :selected="c.alpha2 === profileForm.countryCode" x-text="c.name"></option>
+                                </template>
+                            </select>
+                            <input type="hidden" x-model="profileForm.country" :value="selectedCountryName">
+                        </div>
+                        <button type="submit" :disabled="saving" class="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                            Save Profile
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Change Email -->
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-5">
+                    <div>
+                        <h3 class="font-semibold text-base">Change Email</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Update the email address linked to your account.</p>
+                    </div>
+                    <form @submit.prevent="saveEmail" class="space-y-4 max-w-lg">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">New Email Address</label>
+                            <input type="email" x-model="emailForm.email" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Current Password (for confirmation)</label>
+                            <input type="password" x-model="emailForm.password" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <button type="submit" :disabled="saving" class="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                            Update Email
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Change Password -->
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-5">
+                    <div>
+                        <h3 class="font-semibold text-base">Change Password</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Choose a strong, unique password to secure your account.</p>
+                    </div>
+                    <form @submit.prevent="savePassword" class="space-y-4 max-w-lg">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Current Password</label>
+                            <input type="password" x-model="passwordForm.currentPassword" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">New Password (min 6 characters)</label>
+                            <input type="password" x-model="passwordForm.newPassword" minlength="6" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Confirm New Password</label>
+                            <input type="password" x-model="passwordForm.confirmPassword" minlength="6" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <button type="submit" :disabled="saving" class="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                            Change Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===== TRAVEL PREFERENCES ===== -->
+            <div x-show="activeSection === 'preferences'" x-cloak class="space-y-5">
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-7">
+
+                    <!-- Preferred Budget -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold">Preferred Budget</label>
+                        <div class="grid gap-3 grid-cols-1 sm:grid-cols-3">
+                            <template x-for="b in ['Budget Friendly', 'Moderate', 'Luxury']" :key="b">
+                                <button type="button" @click="prefForm.preferredBudget = b"
+                                        :class="prefForm.preferredBudget === b ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-foreground hover:bg-muted'"
+                                        class="flex items-center justify-center rounded-xl border p-3.5 text-sm transition-colors">
+                                    <span x-text="b"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Travel Style -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold">Travel Style / Companions</label>
+                        <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                            <template x-for="s in ['Just Me', 'A Couple', 'Family', 'Friends']" :key="s">
+                                <button type="button" @click="prefForm.travelStyle = s"
+                                        :class="prefForm.travelStyle === s ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-foreground hover:bg-muted'"
+                                        class="flex items-center justify-center rounded-xl border p-3.5 text-sm transition-colors">
+                                    <span x-text="s"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Accommodation -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold">Accommodation Preference</label>
+                        <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                            <template x-for="a in ['Budget', 'Mid-range', 'Boutique Hotel', 'Luxury']" :key="a">
+                                <button type="button" @click="prefForm.accommodation = a"
+                                        :class="prefForm.accommodation === a ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-foreground hover:bg-muted'"
+                                        class="flex items-center justify-center rounded-xl border p-3.5 text-sm transition-colors">
+                                    <span x-text="a"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Interests -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold">Interests</label>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="i in ['adventure', 'food', 'culture', 'nature', 'nightlife']" :key="i">
+                                <button type="button" @click="toggleInterest(i)"
+                                        :class="selectedInterests.includes(i) ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:border-primary/40'"
+                                        class="rounded-full border px-4 py-2 text-sm capitalize transition-colors">
+                                    <span x-text="i"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Food Preference -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold">Food Preference</label>
+                        <div class="grid gap-3 grid-cols-2 sm:grid-cols-3">
+                            <template x-for="f in ['All', 'Vegetarian', 'Vegan', 'Halal', 'Gluten-Free', 'Kosher']" :key="f">
+                                <button type="button" @click="prefForm.foodPreference = f"
+                                        :class="prefForm.foodPreference === f ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-foreground hover:bg-muted'"
+                                        class="flex items-center justify-center rounded-xl border p-3 text-sm transition-colors">
+                                    <span x-text="f"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-border">
+                        <button type="button" @click="savePreferences" :disabled="saving"
+                                class="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                            Save Travel Preferences
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== APPEARANCE ===== -->
+            <div x-show="activeSection === 'appearance'" x-cloak class="space-y-5">
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-5">
+                    <div>
+                        <h3 class="font-semibold text-base">Theme Mode</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Choose how IntelliTrip looks for you.</p>
+                    </div>
+                    <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+
+                        <!-- Light Mode -->
+                        <button type="button" @click="setTheme('light')"
+                                :class="currentTheme === 'light' ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border hover:border-primary/40'"
+                                class="flex flex-col items-center gap-3 rounded-2xl border p-5 transition-all">
+                            <span class="text-3xl">☀️</span>
+                            <span class="text-sm font-medium">Light Mode</span>
+                            <span x-show="currentTheme === 'light'" class="text-xs text-primary font-semibold">Active</span>
+                        </button>
+
+                        <!-- Dark Mode -->
+                        <button type="button" @click="setTheme('dark')"
+                                :class="currentTheme === 'dark' ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border hover:border-primary/40'"
+                                class="flex flex-col items-center gap-3 rounded-2xl border p-5 transition-all">
+                            <span class="text-3xl">🌙</span>
+                            <span class="text-sm font-medium">Dark Mode</span>
+                            <span x-show="currentTheme === 'dark'" class="text-xs text-primary font-semibold">Active</span>
+                        </button>
+
+                        <!-- System Default -->
+                        <button type="button" @click="setTheme('system')"
+                                :class="currentTheme === 'system' ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border hover:border-primary/40'"
+                                class="flex flex-col items-center gap-3 rounded-2xl border p-5 transition-all">
+                            <span class="text-3xl">💻</span>
+                            <span class="text-sm font-medium">System Default</span>
+                            <span x-show="currentTheme === 'system'" class="text-xs text-primary font-semibold">Active</span>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== NOTIFICATIONS ===== -->
+            <div x-show="activeSection === 'notifications'" x-cloak class="space-y-5">
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-base">Manage Notifications</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Control which alerts and reminders you receive.</p>
+                    </div>
+
+                    <!-- Trip Reminders -->
+                    <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border border-border bg-background">
+                        <div>
+                            <p class="font-medium text-sm">Trip Reminders</p>
+                            <p class="text-xs text-muted-foreground mt-0.5">Upcoming trips, itinerary updates, and check-in schedules.</p>
+                        </div>
+                        <button type="button" @click="notifForm.tripReminders = !notifForm.tripReminders; saveNotifications()"
+                                :class="notifForm.tripReminders ? 'bg-primary' : 'bg-muted'"
+                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">
+                            <span :class="notifForm.tripReminders ? 'translate-x-5' : 'translate-x-0'"
+                                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                        </button>
+                    </div>
+
+                    <!-- Travel Recommendations -->
+                    <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border border-border bg-background">
+                        <div>
+                            <p class="font-medium text-sm">Travel Recommendations</p>
+                            <p class="text-xs text-muted-foreground mt-0.5">Seasonal travel suggestions, trending spots, and destination tips.</p>
+                        </div>
+                        <button type="button" @click="notifForm.travelRecommendations = !notifForm.travelRecommendations; saveNotifications()"
+                                :class="notifForm.travelRecommendations ? 'bg-primary' : 'bg-muted'"
+                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">
+                            <span :class="notifForm.travelRecommendations ? 'translate-x-5' : 'translate-x-0'"
+                                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PRIVACY & SECURITY ===== -->
+            <div x-show="activeSection === 'privacy'" x-cloak class="space-y-5">
+
+                <!-- Change Password -->
+                <div class="rounded-2xl border border-border bg-card p-6 space-y-5">
+                    <div>
+                        <h3 class="font-semibold text-base">Change Password</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Update your login credentials to keep your account secure.</p>
+                    </div>
+                    <form @submit.prevent="savePassword" class="space-y-4 max-w-lg">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Current Password</label>
+                            <input type="password" x-model="passwordForm.currentPassword" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">New Password (min 6 characters)</label>
+                            <input type="password" x-model="passwordForm.newPassword" minlength="6" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-muted-foreground mb-1">Confirm New Password</label>
+                            <input type="password" x-model="passwordForm.confirmPassword" minlength="6" required class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        </div>
+                        <button type="submit" :disabled="saving" class="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                            Change Password
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Delete Account -->
+                <div class="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-base text-destructive flex items-center gap-2">⚠️ Delete Account</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                    </div>
+
+                    <div x-show="!showDeleteConfirm">
+                        <button type="button" @click="showDeleteConfirm = true"
+                                class="inline-flex items-center justify-center rounded-full bg-destructive px-6 py-2.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors">
+                            Delete Account
+                        </button>
+                    </div>
+
+                    <div x-show="showDeleteConfirm" class="space-y-4 border-t border-destructive/20 pt-4 max-w-md">
+                        <p class="text-sm font-medium text-destructive">Enter your password to confirm permanent deletion:</p>
+                        <input type="password" x-model="deletePassword" placeholder="Enter your password"
+                               class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive">
+                        <div class="flex gap-3">
+                            <button type="button" @click="deleteAccount" :disabled="saving"
+                                    class="inline-flex items-center justify-center rounded-full bg-destructive px-6 py-2.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-60">
+                                Permanently Delete
+                            </button>
+                            <button type="button" @click="showDeleteConfirm = false; deletePassword = ''"
+                                    class="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function settingsPage() {
+    return {
+        activeSection: 'home',
+        saving: false,
+        showDeleteConfirm: false,
+        deletePassword: '',
+        currentTheme: 'system',
+        toast: { show: false, message: '', type: 'success' },
+        profileForm: { name: '', country: '', countryCode: '' },
+        emailForm: { email: '', password: '' },
+        passwordForm: { currentPassword: '', newPassword: '', confirmPassword: '' },
+        prefForm: { preferredBudget: 'Moderate', travelStyle: 'Just Me', accommodation: 'Boutique Hotel', foodPreference: 'All' },
+        selectedInterests: ['food', 'culture'],
+        notifForm: { tripReminders: true, travelRecommendations: true },
+        countries: [],
+        selectedCountryName: '',
+
+        init() {
+            // Read saved theme
+            const saved = localStorage.getItem('theme') || 'system';
+            this.currentTheme = saved;
+            this.applyTheme(saved);
+
+            // Check URL param for deep-link into a section
+            const urlParams = new URLSearchParams(window.location.search);
+            const section = urlParams.get('section') || urlParams.get('tab');
+            const allowed = ['account', 'preferences', 'appearance', 'notifications', 'privacy'];
+            if (section && allowed.includes(section)) {
+                this.activeSection = section;
+            }
+            this.fetchCountries();
+            this.fetchSettings();
+        },
+
+        async fetchCountries() {
+            try {
+                const res = await fetch('/api/user/countries');
+                if (res.ok) {
+                    const data = await res.json();
+                    this.countries = data.countries || [];
+                    // Resolve the currently selected country name from its code.
+                    const match = this.countries.find(c => c.alpha2 === this.profileForm.countryCode);
+                    if (match) this.selectedCountryName = match.name;
+                }
+            } catch (e) {
+                console.error('Failed to load countries', e);
+            }
+        },
+
+        onCountryChange() {
+            const match = this.countries.find(c => c.alpha2 === this.profileForm.countryCode);
+            this.selectedCountryName = match ? match.name : '';
+            this.profileForm.country = this.selectedCountryName;
+            this.saveProfile();
+        },
+
+        showToast(msg, type = 'success') {
+            this.toast.message = msg;
+            this.toast.type = type;
+            this.toast.show = true;
+            setTimeout(() => { this.toast.show = false; }, 4000);
+        },
+
+        setTheme(mode) {
+            this.currentTheme = mode;
+            localStorage.setItem('theme', mode);
+            this.applyTheme(mode);
+            this.showToast('Theme updated to ' + mode.charAt(0).toUpperCase() + mode.slice(1));
+        },
+
+        applyTheme(mode) {
+            const root = document.documentElement;
+            if (mode === 'dark') {
+                root.classList.add('dark');
+            } else if (mode === 'light') {
+                root.classList.remove('dark');
+            } else {
+                // system
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
+            }
+        },
+
+        async fetchSettings() {
+            try {
+                const res = await fetch('/api/user/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    this.profileForm.name = data.name || '';
+                    this.profileForm.country = data.country || '';
+                    this.profileForm.countryCode = data.countryCode || '';
+                    this.emailForm.email = data.email || '';
+                    this.prefForm.preferredBudget = data.preferredBudget || 'Moderate';
+                    this.prefForm.travelStyle = data.travelStyle || 'Just Me';
+                    this.prefForm.accommodation = data.accommodation || 'Boutique Hotel';
+                    this.prefForm.foodPreference = data.foodPreference || 'All';
+                    if (data.interests) {
+                        this.selectedInterests = data.interests.split(',').map(s => s.trim()).filter(Boolean);
+                    }
+                    this.notifForm.tripReminders = data.tripReminders ?? true;
+                    this.notifForm.travelRecommendations = data.travelRecommendations ?? true;
+                }
+            } catch (e) {
+                console.error('Failed to load user settings', e);
+            }
+        },
+
+        toggleInterest(id) {
+            const idx = this.selectedInterests.indexOf(id);
+            if (idx > -1) this.selectedInterests.splice(idx, 1);
+            else this.selectedInterests.push(id);
+        },
+
+        async saveProfile() {
+            this.saving = true;
+            try {
+                const res = await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.profileForm)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+                this.showToast('Profile updated successfully');
+            } catch (e) {
+                this.showToast(e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async saveEmail() {
+            this.saving = true;
+            try {
+                const res = await fetch('/api/user/email', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.emailForm)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to update email');
+                this.showToast('Email address updated');
+                this.emailForm.password = '';
+            } catch (e) {
+                this.showToast(e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async savePassword() {
+            if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+                this.showToast('New passwords do not match', 'error');
+                return;
+            }
+            this.saving = true;
+            try {
+                const res = await fetch('/api/user/password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        currentPassword: this.passwordForm.currentPassword,
+                        newPassword: this.passwordForm.newPassword
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to change password');
+                this.showToast('Password changed successfully');
+                this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+            } catch (e) {
+                this.showToast(e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async savePreferences() {
+            this.saving = true;
+            try {
+                const payload = {
+                    ...this.prefForm,
+                    interests: this.selectedInterests
+                };
+                const res = await fetch('/api/user/travel-preferences', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save preferences');
+                this.showToast('Travel preferences saved');
+            } catch (e) {
+                this.showToast(e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async saveNotifications() {
+            try {
+                const res = await fetch('/api/user/notification-settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.notifForm)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save notification settings');
+                this.showToast('Notification settings updated');
+            } catch (e) {
+                this.showToast(e.message, 'error');
+            }
+        },
+
+        async deleteAccount() {
+            this.saving = true;
+            try {
+                const res = await fetch('/api/user/account', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: this.deletePassword })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to delete account');
+                window.location.href = '/login';
+            } catch (e) {
+                this.showToast(e.message, 'error');
+                this.saving = false;
+            }
+        }
+    }
+}
+</script>
+</body>
+</html>
